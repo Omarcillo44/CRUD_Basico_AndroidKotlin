@@ -1,10 +1,12 @@
 package com.progmov.crud
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,6 +58,7 @@ fun UIPrincipal() {
 
 @Composable
 fun VistaProductos(dbManager: DBHelper) {
+    val context = LocalContext.current
     val productos = remember {
         mutableStateOf(dbManager.obtenerProductos())
     }
@@ -65,7 +68,13 @@ fun VistaProductos(dbManager: DBHelper) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(vertical = 8.dp)
+                    .clickable {
+                        Toast.makeText(context,
+                            "Apenas vamos en la R, sé paciente",
+                            Toast.LENGTH_SHORT).show()
+                    },
+
                 //Sombra que da el efecto de elevación de la card
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 //Un tanto obvio
