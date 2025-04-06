@@ -1,5 +1,8 @@
 package com.progmov.crud
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Base64
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -130,12 +134,8 @@ fun VistaProductos(dbManager: DBHelper) {
                                 .background(Color(0xFFB3E5FC), RoundedCornerShape(8.dp)),
                             contentAlignment = Alignment.Center // Centrar la imagen dentro del Box
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.producto), // Imagen desde los recursos
-                                contentDescription = "Imagen del producto",
-                                modifier = Modifier
-                                    .fillMaxSize() // La imagen ocupará todo el espacio del Box
-                                    .clip(RoundedCornerShape(8.dp)) // Redondear las esquinas para que coincidan con el fondo
+                            ImagenProducto( // imagen del producto
+                                base64Str = producto.imagen
                             )
                         }
 
@@ -205,6 +205,43 @@ fun VistaProductos(dbManager: DBHelper) {
 
     }
 }
+
+
+//Metodo para mostrar la imagen de los productos
+@Composable
+fun ImagenProducto(base64Str: String) {
+    val bitmap = remember(base64Str) { base64ToBitmap(base64Str) }
+    if (bitmap != null) {
+        Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = "Imagen del producto",
+            modifier = Modifier
+                .fillMaxSize() // La imagen ocupará todo el espacio del Box
+                .clip(RoundedCornerShape(8.dp)) // Redondear las esquinas para que coincidan con el fondo
+        )
+    } else { // si es null muestra una imagen generica
+        Image(
+            painter = painterResource(id = R.drawable.producto), // Reemplaza con tu imagen por defecto
+            contentDescription = "Imagen del producto",
+            modifier = Modifier
+                .fillMaxSize() // La imagen ocupará todo el espacio del Box
+                .clip(RoundedCornerShape(8.dp)) // Redondear las esquinas para que coincidan con el fondo
+        )
+    }
+}
+
+//Metodo para decodificar la imagen en base64
+fun base64ToBitmap(base64Str: String): Bitmap? {
+    try {
+        val cleanBase64 = base64Str.substringAfter(",") // limpiar por si trae encabezado
+        val decodedBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    } catch (e: Exception) {
+        return null // Devuelve null si falla la decodificación
+    }
+}
+
+
 // Añade esta función al final de tu archivo
 @Preview(showBackground = true)
 @Composable
