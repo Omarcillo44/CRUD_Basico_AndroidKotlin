@@ -7,12 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -63,77 +65,146 @@ fun VistaProductos(dbManager: DBHelper) {
         mutableStateOf(dbManager.obtenerProductos())
     }
 
-    LazyColumn {
-        items(productos.value) { producto ->
-            Card(
+
+    Column {
+        // Fila con título y botón de añadir
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Productos disponibles",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            // Botón de añadir como un carácter
+            Text(
+                text = "➕",
+                fontSize = 28.sp,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
                     .clickable {
-                        Toast.makeText(context,
-                            "Apenas vamos en la R, sé paciente",
-                            Toast.LENGTH_SHORT).show()
-                    },
-
-                //Sombra que da el efecto de elevación de la card
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                //Un tanto obvio
-                shape = RoundedCornerShape(15.dp),
-                //Color de la card
-                colors = CardDefaults.cardColors(containerColor = Color.White)
-            ) {
-                Row(
-                    modifier = Modifier
-                        //Espaciado interno de la tarjeta
-                        .padding(16.dp)
-                        //Ajustamos al ancho de la pantalla
-                        .fillMaxWidth(),
-                    //centramos en la pantalla
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Imagen simulada
-                    Box(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .background(Color(0xFFB3E5FC), RoundedCornerShape(8.dp)),
-                        contentAlignment = Alignment.Center // Centrar la imagen dentro del Box
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.producto), // Imagen desde los recursos
-                            contentDescription = "Imagen del producto",
-                            modifier = Modifier
-                                .fillMaxSize() // La imagen ocupará todo el espacio del Box
-                                .clip(RoundedCornerShape(8.dp)) // Redondear las esquinas para que coincidan con el fondo
-                        )
+                        Toast.makeText(context, "Añadir producto", Toast.LENGTH_SHORT).show()
                     }
+                    .padding(8.dp)
+            )
+        }
 
-                    //Separación entre la imagen y el resto
-                    Spacer(modifier = Modifier.width(16.dp))
+        LazyColumn {
+            items(productos.value) { producto ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .clickable {
+                            Toast.makeText(
+                                context,
+                                "Apenas vamos en la R, sé paciente",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
 
-                    /*Información del producto*/
-                    Column{
-                        Text(
-                            text = producto.nombre,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        )
-                        Text(
-                            text = "$${producto.precio}",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                        Text(
-                            text = producto.descripcion,
-                            fontSize = 14.sp
-                        )
+                    // Sombra que da el efecto de elevación de la card
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    // Un tanto obvio
+                    shape = RoundedCornerShape(15.dp),
+                    // Color de la card
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            // Espaciado interno de la tarjeta
+                            .padding(16.dp)
+                            // Ajustamos al ancho de la pantalla
+                            .fillMaxWidth(),
+                        // Centramos en la pantalla
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Imagen simulada
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .background(Color(0xFFB3E5FC), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center // Centrar la imagen dentro del Box
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.producto), // Imagen desde los recursos
+                                contentDescription = "Imagen del producto",
+                                modifier = Modifier
+                                    .fillMaxSize() // La imagen ocupará todo el espacio del Box
+                                    .clip(RoundedCornerShape(8.dp)) // Redondear las esquinas para que coincidan con el fondo
+                            )
+                        }
+
+                        // Separación entre la imagen y el resto
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        // Información del producto con layout más flexible
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // Nombre y precio
+                            Text(
+                                text = producto.nombre,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = "$${producto.precio}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+
+                            // Descripción y botones en la misma fila
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = producto.descripcion,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                // Botones
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "✏️",
+                                        fontSize = 24.sp,
+                                        modifier = Modifier
+                                            .clickable {
+                                                Toast.makeText(context, "Editar: ${producto.nombre}", Toast.LENGTH_SHORT).show()
+                                            }
+                                            .padding(8.dp)
+                                    )
+                                    Text(
+                                        text = "❌",
+                                        fontSize = 24.sp,
+                                        modifier = Modifier
+                                            .clickable {
+                                                Toast.makeText(context, "Eliminar: ${producto.nombre}", Toast.LENGTH_SHORT).show()
+                                            }
+                                            .padding(8.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
+
     }
 }
-
-
 // Añade esta función al final de tu archivo
 @Preview(showBackground = true)
 @Composable
@@ -207,6 +278,27 @@ fun VistaProductosPreview() {
                                 fontSize = 14.sp
                             )
                         }
+
+                        Column {
+                            Text(
+                                text = "✏️",
+                                fontSize = 24.sp,
+                                modifier = Modifier
+                                    .clickable {
+                                    }
+                                    .padding(8.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "❌",
+                                fontSize = 24.sp,
+                                modifier = Modifier
+                                    .clickable {
+                                    }
+                                    .padding(8.dp)
+                            )
+                        }
+
                     }
                 }
             }
