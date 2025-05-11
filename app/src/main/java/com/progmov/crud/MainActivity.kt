@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,7 +27,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,39 +43,74 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            UIPrincipal()
+            AppNavegacion()
         }
     }
 }
 
 
 @Composable
-fun UIPrincipal() {
+fun AppNavegacion(){
+    val navControlador = rememberNavController()
+
+    //definir el host
+    NavHost(navControlador, startDestination = "UIPrincipal"){
+        composable("UIPrincipal"){
+            UIPrincipal(navControlador)
+        }
+        composable("AgregarProducto"){
+            AgregarProducto(navControlador)
+        }
+    }
+}
+
+
+@Composable
+fun UIPrincipal(navControlador: NavController) {
     val auxSQLite = DBHelper(LocalContext.current)
     // Pasamos el dbManager a VistaProductos para que maneje la lógica de la base de datos
-    VistaProductos(auxSQLite)
+    VistaProductos(auxSQLite, navControlador)
 }
 
 @Composable
-fun VistaProductos(dbManager: DBHelper) {
+fun VistaProductos(dbManager: DBHelper, navControlador: NavController) {
     val context = LocalContext.current
     val productos = remember {
         mutableStateOf(dbManager.obtenerProductos())
     }
 
+    var alertaEliminacion by remember { mutableStateOf(false) }
+    var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
 
-    Column {
+    Column (
+        modifier = Modifier
+            .statusBarsPadding() // espacio para la barra de estados (hora, bateria, camara etc)
+            .navigationBarsPadding() // espacio para los botones de navegacion
+    ){
         // Fila con título y botón de añadir
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(start = 16.dp, end = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -91,7 +126,8 @@ fun VistaProductos(dbManager: DBHelper) {
                 fontSize = 28.sp,
                 modifier = Modifier
                     .clickable {
-                        Toast.makeText(context, "Añadir producto", Toast.LENGTH_SHORT).show()
+                        navControlador.navigate("AgregarProducto")
+                        //Toast.makeText(context, "Añadir producto", Toast.LENGTH_SHORT).show()
                     }
                     .padding(8.dp)
             )
@@ -134,8 +170,8 @@ fun VistaProductos(dbManager: DBHelper) {
                                 .background(Color(0xFFB3E5FC), RoundedCornerShape(8.dp)),
                             contentAlignment = Alignment.Center // Centrar la imagen dentro del Box
                         ) {
-                            ImagenProducto( // imagen del producto
-                                base64Str = producto.imagen
+                            ImagenProducto( // metodo para mostrar la imagen
+                                rutaImagen = producto.imagen
                             )
                         }
 
@@ -182,7 +218,11 @@ fun VistaProductos(dbManager: DBHelper) {
                                         fontSize = 24.sp,
                                         modifier = Modifier
                                             .clickable {
-                                                Toast.makeText(context, "Editar: ${producto.nombre}", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    "Editar: ${producto.nombre}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                             .padding(8.dp)
                                     )
@@ -191,7 +231,9 @@ fun VistaProductos(dbManager: DBHelper) {
                                         fontSize = 24.sp,
                                         modifier = Modifier
                                             .clickable {
-                                                Toast.makeText(context, "Eliminar: ${producto.nombre}", Toast.LENGTH_SHORT).show()
+                                                productoAEliminar = producto
+                                                alertaEliminacion = true
+                                                //Toast.makeText(context, "Eliminar: ${producto.nombre}", Toast.LENGTH_SHORT).show()
                                             }
                                             .padding(8.dp)
                                     )
@@ -203,43 +245,35 @@ fun VistaProductos(dbManager: DBHelper) {
             }
         }
 
+        //Alerta para confirmar eliminacion de un producto
+        if (alertaEliminacion && productoAEliminar != null) {
+            AlertDialog(
+                onDismissRequest = { alertaEliminacion = false },
+                title = { Text(text = productoAEliminar!!.nombre) },
+                text = { Text("¿Quieres eliminar este producto?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            alertaEliminacion = false
+                            dbManager.eliminarProducto(productoAEliminar!!.id)
+                            productos.value = dbManager.obtenerProductos()  // Actualiza la lista
+                        }
+                    ) {
+                        Text("Eliminar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { alertaEliminacion = false }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
     }
 }
 
-
-//Metodo para mostrar la imagen de los productos
-@Composable
-fun ImagenProducto(base64Str: String) {
-    val bitmap = remember(base64Str) { base64ToBitmap(base64Str) }
-    if (bitmap != null) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = "Imagen del producto",
-            modifier = Modifier
-                .fillMaxSize() // La imagen ocupará todo el espacio del Box
-                .clip(RoundedCornerShape(8.dp)) // Redondear las esquinas para que coincidan con el fondo
-        )
-    } else { // si es null muestra una imagen generica
-        Image(
-            painter = painterResource(id = R.drawable.producto), // Reemplaza con tu imagen por defecto
-            contentDescription = "Imagen del producto",
-            modifier = Modifier
-                .fillMaxSize() // La imagen ocupará todo el espacio del Box
-                .clip(RoundedCornerShape(8.dp)) // Redondear las esquinas para que coincidan con el fondo
-        )
-    }
-}
-
-//Metodo para decodificar la imagen en base64
-fun base64ToBitmap(base64Str: String): Bitmap? {
-    try {
-        val cleanBase64 = base64Str.substringAfter(",") // limpiar por si trae encabezado
-        val decodedBytes = Base64.decode(cleanBase64, Base64.DEFAULT)
-        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-    } catch (e: Exception) {
-        return null // Devuelve null si falla la decodificación
-    }
-}
 
 
 // Añade esta función al final de tu archivo
