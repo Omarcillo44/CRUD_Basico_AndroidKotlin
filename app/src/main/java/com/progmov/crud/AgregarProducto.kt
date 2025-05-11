@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -83,10 +84,9 @@ fun AgregarProducto(navControlador: NavController) {
     var errorDescripcion by remember { mutableStateOf(false) }
 
     Column (
-        // para evitar que la camara estorbe en el contenido
         modifier = Modifier
-            .statusBarsPadding()
-            //.windowInsetsPadding(WindowInsets.safeDrawing)
+            .statusBarsPadding() // espacio para la barra de estados (hora, bateria, camara etc)
+            .navigationBarsPadding() // espacio para los botones de navegacion
     ){
         Row(
             modifier = Modifier
