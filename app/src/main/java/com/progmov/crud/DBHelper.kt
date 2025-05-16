@@ -91,4 +91,17 @@ INSERT INTO PRODUCTO (nombre, precio, descripcion, imagen) VALUES ('Galaxy A55',
         baseDatos.delete("PRODUCTO", "id=?", arrayOf(id.toString()))
         baseDatos.close()
     }
+
+    fun actualizarProducto(id: Int, nombre: String, precio: Double, descripcion: String, imagen: String) {
+        val baseDatos = writableDatabase
+        val values = ContentValues().apply {
+            put("nombre", nombre)
+            put("precio", precio)
+            put("descripcion", descripcion)
+            put("imagen", imagen)
+        }
+        baseDatos.update("PRODUCTO", values, "id=?", arrayOf(id.toString()))
+        baseDatos.close()
+    }
+
 }

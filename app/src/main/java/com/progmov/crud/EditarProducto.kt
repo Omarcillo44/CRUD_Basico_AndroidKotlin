@@ -1,16 +1,13 @@
 package com.progmov.crud
 
 import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.provider.Settings
 import android.util.Base64
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,13 +33,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,36 +54,74 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
-fun AgregarProducto(navControlador: NavController) {
+fun EditarProducto(navControlador: NavController, productoId: Int) {
     val context = LocalContext.current
-    val auxSQLite = DBHelper(LocalContext.current)
-
+    val auxSQLite = DBHelper(context)
+    
+    // Variables para almacenar los datos del producto
     var nombre by rememberSaveable { mutableStateOf("") }
     var descripcion by rememberSaveable { mutableStateOf("") }
     var precio by rememberSaveable { mutableStateOf("") }
     var imagen by remember { mutableStateOf<Bitmap?>(null) }
-    //var imagen by rememberSaveable { mutableStateOf<Bitmap?>(null) }
     var rutaImagen by rememberSaveable { mutableStateOf("") }
-
+    
     var errorNombre by remember { mutableStateOf(false) }
     var errorPrecio by remember { mutableStateOf(false) }
     var errorDescripcion by remember { mutableStateOf(false) }
+    
+    // Cargar los datos del producto existente
+    LaunchedEffect(productoId) {
+        val productos = auxSQLite.obtenerProductos()
+        val producto = productos.find { it.id == productoId }
+        
+        producto?.let {
+            nombre = it.nombre
+            descripcion = it.descripcion
+            precio = it.precio.toString()
+            rutaImagen = it.imagen
+            
+            // Cargar la imagen si existe
+            if (it.imagen.isNotEmpty() && it.imagen != "placeholder_base64") {
+                withContext(Dispatchers.IO) {
+                    try {
+                        // Si la imagen es una ruta de archivo
+                        val file = java.io.File(it.imagen)
+                        if (file.exists()) {
+                            imagen = BitmapFactory.decodeFile(it.imagen)
+                        } 
+                        // Si la imagen es un Base64
+                        else if (it.imagen.startsWith("data:") || it.imagen.length > 100) {
+                            try {
+                                val base64 = it.imagen.substringAfter("base64,")
+                                val imageBytes = Base64.decode(base64, Base64.DEFAULT)
+                                imagen = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                            } catch (e: Exception) {
+                                // Manejar error si no es Base64 válido
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // Manejar error de carga de imagen
+                    }
+                }
+            }
+        } ?: run {
+            // Si no se encuentra el producto, volver a la pantalla principal
+            Toast.makeText(context, "Producto no encontrado", Toast.LENGTH_SHORT).show()
+            navControlador.navigate("UIPrincipal")
+        }
+    }
 
-    Column (
+    Column(
         modifier = Modifier
-            .statusBarsPadding() // espacio para la barra de estados (hora, bateria, camara etc)
-            .navigationBarsPadding() // espacio para los botones de navegacion
-    ){
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -94,19 +129,18 @@ fun AgregarProducto(navControlador: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Botón para regresar a la ventana principal
+            // Botón para regresar
             Text(
                 text = "⬅",
                 fontSize = 28.sp,
                 modifier = Modifier
                     .clickable {
-                        //navControlador.popBackStack()
                         navControlador.navigate("UIPrincipal")
                     }
                     .padding(8.dp)
             )
             Text(
-                text = "Agregar producto nuevo",
+                text = "Editar producto",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -117,35 +151,34 @@ fun AgregarProducto(navControlador: NavController) {
             thickness = 1.dp
         )
 
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier
                 .padding(start = 16.dp, end = 16.dp)
                 .weight(1f)
         ) {
             item {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(text = "Nombre",
+                Text(
+                    text = "Nombre",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp)
+                    fontSize = 20.sp
+                )
             }
 
             item {
                 OutlinedTextField(
                     value = nombre,
-                    placeholder = { Text("Titulo del producto") },
+                    placeholder = { Text("Título del producto") },
                     modifier = Modifier.fillMaxWidth(),
-                    // limita la cantidad de letras que se pueden escribir
                     onValueChange = { input ->
                         if (input.length <= 30) {
                             nombre = input
                         }
                         errorNombre = false
                     },
-                    // indicardor para mostrar la cantidad de letras disponibles
                     trailingIcon = {
                         Text("${nombre.length}/30")
                     },
-                    // cambia el color del textfield cuando el valor es invalido
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = if (errorNombre) Color.Red else MaterialTheme.colorScheme.outline,
                         unfocusedIndicatorColor = if (errorNombre) Color.Red else MaterialTheme.colorScheme.outline,
@@ -157,9 +190,11 @@ fun AgregarProducto(navControlador: NavController) {
             }
 
             item {
-                Text(text = "Precio",
+                Text(
+                    text = "Precio",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp)
+                    fontSize = 20.sp
+                )
             }
             item {
                 OutlinedTextField(
@@ -185,9 +220,11 @@ fun AgregarProducto(navControlador: NavController) {
             }
 
             item {
-                Text(text = "Descripción",
+                Text(
+                    text = "Descripción",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp)
+                    fontSize = 20.sp
+                )
             }
             item {
                 OutlinedTextField(
@@ -195,7 +232,7 @@ fun AgregarProducto(navControlador: NavController) {
                     placeholder = { Text("Detalles del producto") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp), // Altura inicial para que se vea grande
+                        .height(120.dp),
                     onValueChange = { input ->
                         val lineCount = input.count { it == '\n' } + 1
                         if (input.length <= 150 && lineCount <= 5) {
@@ -217,34 +254,32 @@ fun AgregarProducto(navControlador: NavController) {
             }
 
             item {
-                Text(text = "Imagen",
+                Text(
+                    text = "Imagen",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp)
+                    fontSize = 20.sp
+                )
                 Spacer(modifier = Modifier.height(5.dp))
             }
             // Parte que permite seleccionar la imagen
             item {
-                //guarda la accion para mostrarla despues de que se le otorgen permisos
                 var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
 
-                // espera la respuesta para poder mostrar la galeria o camara
                 val permissionLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission()
                 ) { isGranted ->
-                    if (isGranted) { // parmiso otorgado
-                        pendingAction?.invoke()  // Ejecuta la acción que se estaba esperando
+                    if (isGranted) {
+                        pendingAction?.invoke()
                         pendingAction = null
                     } else {
                         Toast.makeText(context, "Permiso denegado. Ve a la configuración para habilitar el permiso.", Toast.LENGTH_LONG).show()
                     }
                 }
 
-                // Selector de imagen en la galeria
                 val galleryLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.GetContent()
                 ) { uri: Uri? ->
                     uri?.let {
-                        // convierte la imagen seleccionada a un bitmap
                         val bitmap = if (Build.VERSION.SDK_INT < 28) {
                             MediaStore.Images.Media.getBitmap(context.contentResolver, it)
                         } else {
@@ -255,7 +290,6 @@ fun AgregarProducto(navControlador: NavController) {
                     }
                 }
 
-                // Camara para tomar la foto
                 val cameraLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.TakePicturePreview()
                 ) { bitmap: Bitmap? ->
@@ -276,10 +310,15 @@ fun AgregarProducto(navControlador: NavController) {
                         contentAlignment = Alignment.Center
                     ) {
                         imagen?.let {
-                            // llama al metodo para mostar imagenes pasandole un bitmap
                             ImagenProducto(imagen!!)
-                        } ?: //Image(painterResource(id = R.drawable.producto),null)
-                        Text("No hay imagen seleccionada.\nSe asignará una por defecto.")
+                        } ?: run {
+                            if (rutaImagen.isNotEmpty() && rutaImagen != "placeholder_base64") {
+                                // Si hay ruta pero no imagen cargada, mostrar un mensaje
+                                Text("Imagen guardada anteriormente")
+                            } else {
+                                Text("No hay imagen seleccionada.\nSe asignará una por defecto.")
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -297,21 +336,24 @@ fun AgregarProducto(navControlador: NavController) {
                                     if (ContextCompat.checkSelfPermission(
                                             context,
                                             Manifest.permission.READ_MEDIA_IMAGES
-                                    ) == PackageManager.PERMISSION_GRANTED) {
+                                        ) == PackageManager.PERMISSION_GRANTED
+                                    ) {
                                         action()
                                     } else {
                                         pendingAction = action
                                         permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
                                     }
-                                } else{
+                                } else {
                                     action()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(16.dp), // Bordes redondeados
+                            shape = RoundedCornerShape(16.dp),
                         ) {
-                            Text(text = "Galería",
-                                fontSize = 15.sp)
+                            Text(
+                                text = "Galería",
+                                fontSize = 15.sp
+                            )
                         }
 
                         Spacer(modifier = Modifier.width(16.dp))
@@ -333,10 +375,12 @@ fun AgregarProducto(navControlador: NavController) {
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(16.dp), // Bordes redondeados
+                            shape = RoundedCornerShape(16.dp),
                         ) {
-                            Text(text = "Cámara",
-                                fontSize = 15.sp)
+                            Text(
+                                text = "Cámara",
+                                fontSize = 15.sp
+                            )
                         }
                     }
                 }
@@ -346,40 +390,37 @@ fun AgregarProducto(navControlador: NavController) {
 
         Button(
             onClick = {
-                // validaciones para ver que no haya campos vacios
-                if (nombre.isNullOrBlank()) {
+                // Validaciones
+                if (nombre.isBlank()) {
                     Toast.makeText(context, "Ingrese un nombre para el producto", Toast.LENGTH_SHORT).show()
                     errorNombre = true
-                } else if (precio.isNullOrBlank() || precio.toDouble() == 0.0) {
-                    Toast.makeText(context, "Ingrese un precio valido para el producto", Toast.LENGTH_SHORT).show()
+                } else if (precio.isBlank() || precio.toDouble() == 0.0) {
+                    Toast.makeText(context, "Ingrese un precio válido para el producto", Toast.LENGTH_SHORT).show()
                     errorPrecio = true
-                } else if (descripcion.isNullOrBlank()) {
+                } else if (descripcion.isBlank()) {
                     Toast.makeText(context, "Ingrese una descripción para el producto", Toast.LENGTH_SHORT).show()
                     errorDescripcion = true
                 } else {
-                    // intenta agregar el producto
                     try {
-                        // crea la ruta de la imagen
+                        // Si se seleccionó una nueva imagen, guardarla
                         imagen?.let {
                             rutaImagen = guardarImagenEnArchivo(context, imagen!!)
                         }
-                        // agrega el producto a la base de datos
-                        auxSQLite.agregarProducto(
+                        
+                        // Actualizar el producto en la base de datos
+                        auxSQLite.actualizarProducto(
+                            productoId,
                             nombre,
                             precio.toDouble(),
                             descripcion,
                             rutaImagen
                         )
-                        Toast.makeText(context, "Producto agregado correctamente", Toast.LENGTH_SHORT).show()
+                        
+                        Toast.makeText(context, "Producto actualizado correctamente", Toast.LENGTH_SHORT).show()
+                        navControlador.navigate("UIPrincipal")
                     } catch (ex: Exception) {
-                        Toast.makeText(context, "Hubo un error, intentelo de nuevo", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Error al actualizar: ${ex.message}", Toast.LENGTH_SHORT).show()
                     }
-                    // limpia los valores asignados
-                    nombre = ""
-                    precio = ""
-                    descripcion = ""
-                    imagen = null
-                    rutaImagen = ""
                 }
             },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -388,9 +429,10 @@ fun AgregarProducto(navControlador: NavController) {
                 .height(60.dp),
             shape = RectangleShape
         ) {
-            Text(text = "Agregar producto",
-                //fontWeight = FontWeight.Bold,
-                fontSize = 20.sp)
+            Text(
+                text = "Actualizar producto",
+                fontSize = 20.sp
+            )
         }
     }
 }
