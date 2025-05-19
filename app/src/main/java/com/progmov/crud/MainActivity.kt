@@ -21,9 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -39,27 +36,21 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.tooling.preview.Preview
+import com.progmov.crud.components.MenuFab
+import com.progmov.crud.components.ProductoCard
+import com.progmov.crud.models.Producto
+import com.progmov.crud.database.DBHelper
 import com.progmov.crud.ui.theme.CRUDTheme
 import com.progmov.crud.ui.theme.ThemeState
 import com.progmov.crud.ui.theme.ThemeViewModel
@@ -94,7 +85,7 @@ fun AppNavegacion(themeViewModel: ThemeViewModel) {
             UIPrincipal(navControlador, themeViewModel)
         }
         composable("AgregarProducto") {
-            AgregarProducto(navControlador)
+            AgregarProducto(navControlador, themeViewModel)
         }
         composable("EditarProducto/{productoId}") { backStackEntry ->
             val productoId = backStackEntry.arguments?.getString("productoId")?.toIntOrNull() ?: -1
@@ -157,7 +148,7 @@ fun VistaProductos(dbManager: DBHelper, navControlador: NavController, themeView
                         producto = producto,
                         onEditar = { navControlador.navigate("EditarProducto/${producto.id}") },
                         onEliminar = { productoAEliminar = producto; alertaEliminacion = true },
-                        onClick = { Toast.makeText(context, "Apenas vamos en la R, sé paciente", Toast.LENGTH_SHORT).show() }
+                        onClick = { Toast.makeText(context, "Producto #${producto.id}", Toast.LENGTH_SHORT).show() }
                     )
                 }
             }
@@ -175,57 +166,10 @@ fun VistaProductos(dbManager: DBHelper, navControlador: NavController, themeView
             }
         }
 
-        // Menú FAB
-        Box(
-            modifier = Modifier
-                .wrapContentSize()
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (isFabExpanded) {
-                    menuOptions.forEach { option ->
-                        ExtendedFloatingActionButton(
-                            onClick = {
-                                when (option) {
-                                    "Ayuda" -> showHelpDialog = true
-                                    "Tema" -> showThemeDialog = true
-                                }
-                                isFabExpanded = false
-                            },
-                            modifier = Modifier.widthIn(min = 150.dp),
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ) {
-                            Icon(
-                                imageVector = when (option) {
-                                    "Ayuda" -> Icons.Default.Info
-                                    "Tema" -> Icons.Default.Build
-                                    else -> Icons.Default.Info
-                                },
-                                contentDescription = option
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(option)
-                        }
-                    }
-                }
-
-                FloatingActionButton(
-                    onClick = { isFabExpanded = !isFabExpanded },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ) {
-                    Icon(
-                        imageVector = if (isFabExpanded) Icons.Default.Close else Icons.Default.Menu,
-                        contentDescription = if (isFabExpanded) "Cerrar menú" else "Abrir menú"
-                    )
-                }
-            }
-        }
+        MenuFab(
+            onAyudaClick = { showHelpDialog = true },
+            onTemaClick = { showThemeDialog = true }
+        )
 
         if (showHelpDialog) {
             DialogoAyuda { showHelpDialog = false }
@@ -240,96 +184,7 @@ fun VistaProductos(dbManager: DBHelper, navControlador: NavController, themeView
     }
 }
 
-@Composable
-fun ProductoCard(
-    producto: Producto,
-    onEditar: () -> Unit,
-    onEliminar: () -> Unit,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        RoundedCornerShape(8.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                ImagenProducto(rutaImagen = producto.imagen)
-            }
-            Spacer(Modifier.width(16.dp))
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = producto.nombre,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "$${producto.precio}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = producto.descripcion,
-                        fontSize = 14.sp,
-                        modifier = Modifier.weight(1f),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar",
-                            modifier = Modifier
-                                .size(45.dp)
-                                .clickable(onClick = onEditar)
-                                .padding(8.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Eliminar",
-                            modifier = Modifier
-                                .size(45.dp)
-                                .clickable(onClick = onEliminar)
-                                .padding(8.dp),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
+
 
 @Composable
 fun ConfirmarEliminacionDialog(
@@ -368,6 +223,7 @@ fun DialogoAyuda(onClose: () -> Unit) {
         }
     )
 }
+
 @Composable
 fun DialogoTema(
     onClose: () -> Unit,

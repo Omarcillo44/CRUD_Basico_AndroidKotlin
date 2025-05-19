@@ -56,6 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.progmov.crud.components.ImagenProducto
+import com.progmov.crud.components.guardarImagenEnArchivo
+import com.progmov.crud.database.DBHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -1,9 +1,10 @@
-package com.progmov.crud
+package com.progmov.crud.database
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.progmov.crud.models.Producto
 
 class DBHelper(context: Context) : SQLiteOpenHelper(context, "miBase.db", null, 4) { // Versión 2
 

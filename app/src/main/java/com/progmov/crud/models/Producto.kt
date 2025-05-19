@@ -1,4 +1,4 @@
-package com.progmov.crud
+package com.progmov.crud.models
 
 data class Producto(
     val id: Int,
