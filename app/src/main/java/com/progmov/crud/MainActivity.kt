@@ -1,4 +1,5 @@
 package com.progmov.crud
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -60,9 +61,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
 
+        val prefs = PreferenceHelper(applicationContext)
+        val isDarkTheme = prefs.leerEstadoModoOscuro()
+
+        // Asegúrate de acceder a tu ViewModel así:
+        val themeViewModel: ThemeViewModel by viewModels()
+
+        // Actualiza el estado antes de setContent
+        themeViewModel.setDarkTheme(isDarkTheme)
+
+        setContent {
             val currentThemeState = themeViewModel.themeState.value
 
             CRUDTheme(themeState = currentThemeState) {
@@ -102,8 +111,6 @@ fun UIPrincipal(navControlador: NavController, themeViewModel: ThemeViewModel) {
 
 @Composable
 fun VistaProductos(dbManager: DBHelper, navControlador: NavController, themeViewModel: ThemeViewModel) {
-    var isFabExpanded by remember { mutableStateOf(false) }
-    val menuOptions = listOf("Ayuda", "Tema")
     var showHelpDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val productos = remember { mutableStateOf(dbManager.obtenerProductos()) }
@@ -166,10 +173,17 @@ fun VistaProductos(dbManager: DBHelper, navControlador: NavController, themeView
             }
         }
 
-        MenuFab(
-            onAyudaClick = { showHelpDialog = true },
-            onTemaClick = { showThemeDialog = true }
-        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 96.dp, end = 16.dp) // Padding generoso
+        ) {
+            MenuFab(
+                onAyudaClick = { showHelpDialog = true },
+                onTemaClick = { showThemeDialog = true }
+            )
+        }
+
 
         if (showHelpDialog) {
             DialogoAyuda { showHelpDialog = false }
@@ -229,6 +243,11 @@ fun DialogoTema(
     onClose: () -> Unit,
     themeViewModel: ThemeViewModel
 ) {
+    val context: Context = LocalContext.current
+    val preferenciaModoOscuro = remember { PreferenceHelper(context) }
+
+    var estadoModoOscuro by remember { mutableStateOf(preferenciaModoOscuro.leerEstadoModoOscuro()) }
+
     AlertDialog(
         onDismissRequest = onClose,
         title = {
@@ -236,19 +255,52 @@ fun DialogoTema(
         },
         text = {
             Column {
-                // Opción de tema oscuro/claro
+                // Opción de tema claro
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            themeViewModel.toggleTheme()
+                            themeViewModel.setDarkTheme(false)
+                            estadoModoOscuro = false
+                            preferenciaModoOscuro.guardarEstadoModoOscuro(false) // Guardar cambio
                         }
                         .padding(vertical = 8.dp)
                 ) {
                     RadioButton(
-                        selected = themeViewModel.themeState.value.isDarkTheme,
-                        onClick = { themeViewModel.toggleTheme() }
+                        selected = !estadoModoOscuro,
+                        onClick = {
+                            themeViewModel.setDarkTheme(false)
+                            estadoModoOscuro = false
+                            preferenciaModoOscuro.guardarEstadoModoOscuro(false) // Guardar cambio
+                        }
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    Text(
+                        text = "Modo claro",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                // Opción de tema oscuro
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            themeViewModel.setDarkTheme(true)
+                            estadoModoOscuro = true
+                            preferenciaModoOscuro.guardarEstadoModoOscuro(true) // Guardar cambio
+                        }
+                        .padding(vertical = 8.dp)
+                ) {
+                    RadioButton(
+                        selected = estadoModoOscuro,
+                        onClick = {
+                            themeViewModel.setDarkTheme(true)
+                            estadoModoOscuro = true
+                            preferenciaModoOscuro.guardarEstadoModoOscuro(true) // Guardar cambio
+                        }
                     )
                     Spacer(Modifier.width(16.dp))
                     Text(
@@ -291,8 +343,7 @@ fun DialogoTema(
     )
 }
 
-
-// Añade esto al FINAL del archivo:
+// Previews
 @Preview(name = "Light Theme")
 @Composable
 fun PreviewProductoCard2() {

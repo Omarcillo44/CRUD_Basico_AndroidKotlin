@@ -1,29 +1,26 @@
-// ThemeViewModel.kt
-package com.progmov.crud.ui.theme // <- MISMO PAQUETE que ThemeState
+package com.progmov.crud.ui.theme
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
 class ThemeViewModel : ViewModel() {
     private val _themeState = mutableStateOf(
-        ThemeState( // <- Usa la misma definición
-            isDarkTheme = false,
+        ThemeState(
+            isDarkTheme = false, // Tema claro por defecto
             useDynamicColor = true
         )
     )
     val themeState = _themeState
 
-    fun toggleTheme() {
+    fun setDarkTheme(enabled: Boolean) {
         _themeState.value = _themeState.value.copy(
-            isDarkTheme = !_themeState.value.isDarkTheme
+            isDarkTheme = enabled
         )
     }
-
 
     fun setDynamicColor(enabled: Boolean) {
         _themeState.value = _themeState.value.copy(
             useDynamicColor = enabled
         )
     }
-
 }
