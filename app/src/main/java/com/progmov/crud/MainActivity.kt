@@ -89,7 +89,7 @@ fun AppNavegacion(themeViewModel: ThemeViewModel) {
         }
         composable("EditarProducto/{productoId}") { backStackEntry ->
             val productoId = backStackEntry.arguments?.getString("productoId")?.toIntOrNull() ?: -1
-            EditarProducto(navControlador, productoId)
+            EditarProducto(navControlador, productoId, themeViewModel)
         }
     }
 }
