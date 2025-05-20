@@ -216,36 +216,29 @@ fun AgregarProducto(navControlador: NavController, themeViewModel: ThemeViewMode
         AlertDialog(
             onDismissRequest = onClose,
             title = {
-                Text("Agregar producto... ¿otra vez coleccionando cosas?", style = MaterialTheme.typography.headlineSmall)
+                Text("Ayuda para registro", style = MaterialTheme.typography.headlineSmall)
             },
             text = {
                 Column(modifier = Modifier.padding(top = 8.dp)) {
-                    Text(
-                        "Aquí va la receta secreta para agregar tu maravilloso producto:",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Text("Instrucciones para agregar un producto:", style = MaterialTheme.typography.bodyMedium)
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text("• Rellena los campos de nombre, precio y descripción. No inventes datos raros.")
+                    Text("• Ingrese el nombre, precio y descripción del producto.")
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text("• Nada de campos vacíos. La validación está lista para castigarte.")
+                    Text("• Todos los campos son obligatorios y deben contener datos válidos.")
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text("• Usa el botón de galería para seleccionar la imagen del producto. Fácil, ¿no?")
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text("• ¿Te sientes creativo? Entonces toma la foto tú. Tu cel, tu riesgo.")
+                    Text("• Puede añadir una imagen desde la galería o capturar una fotografía.")
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Presiona *Agregar producto* para que tu obra maestra cobre vida.")
+                        Text("Registra el producto con la información proporcionada.")
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -253,7 +246,7 @@ fun AgregarProducto(navControlador: NavController, themeViewModel: ThemeViewMode
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.ArrowBack, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("¿Cambio de opinión? El botón de volver siempre estará para ti.")
+                        Text("Regresa al menú anterior sin registrar el producto.")
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -261,13 +254,13 @@ fun AgregarProducto(navControlador: NavController, themeViewModel: ThemeViewMode
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Menu, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Y claro, las tres barritas mágicas también están aquí. Tema y ayuda en uno.")
+                        Text("Abre el menú lateral para acceder a más opciones.")
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = onClose) {
-                    Text("Todo claro, jefe")
+                    Text("Entendido")
                 }
             }
         )

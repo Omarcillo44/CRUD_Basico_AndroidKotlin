@@ -228,29 +228,22 @@ fun DialogoAyuda(onClose: () -> Unit) {
     AlertDialog(
         onDismissRequest = onClose,
         title = {
-            Text("¿Otra vez tú?", style = MaterialTheme.typography.headlineSmall)
+            Text("Ayuda", style = MaterialTheme.typography.headlineSmall)
         },
         text = {
             Column(modifier = Modifier.padding(top = 8.dp)) {
-                Text(
-                    "Por si la lógica no fue suficiente, aquí te lo explico en caliente:",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text("Instrucciones para el uso del catálogo:", style = MaterialTheme.typography.bodyMedium)
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Add, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Agrega un producto nuevo (sí, uno más).")
-                }
+                Text("• Deslice hacia arriba o hacia abajo para explorar los productos.")
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.Edit, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Edita los datos del producto. Pero hazlo con cuidado, ¿sí?")
+                    Text("Permite editar los datos del producto seleccionado.")
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -258,7 +251,7 @@ fun DialogoAyuda(onClose: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.Delete, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Elimina el producto. Tranquilo, se pedirá confirmación. No eres un asesino... ¿verdad?")
+                    Text("Permite eliminar un producto. Se solicitará confirmación.")
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -266,25 +259,18 @@ fun DialogoAyuda(onClose: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Menu, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ese botón de las 3 barritas... abre esto mismo y cambia el tema. Increíble, ¿no?")
+                    Text("Abre el menú lateral con opciones como ayuda y personalización de tema.")
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    "Y sí, puedes deslizar hacia arriba o abajo para ver el catálogo. No es magia, es scroll",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
             }
         },
         confirmButton = {
             TextButton(onClick = onClose) {
-                Text("Lo tengo")
+                Text("Entendido")
             }
         }
     )
 }
+
 
 
 @Composable
