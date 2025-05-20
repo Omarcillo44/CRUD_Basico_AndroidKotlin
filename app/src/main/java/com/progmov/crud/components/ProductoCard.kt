@@ -72,7 +72,7 @@ fun ProductoCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "$${producto.precio}",
+                    text = "$${"%.2f".format(producto.precio)}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.primary

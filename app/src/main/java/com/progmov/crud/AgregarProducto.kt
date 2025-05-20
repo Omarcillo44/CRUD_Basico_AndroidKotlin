@@ -84,7 +84,7 @@ fun AgregarProducto(navControlador: NavController, themeViewModel: ThemeViewMode
             modifier = Modifier
                 .fillMaxSize()
                 .systemBarsPadding()
-                .padding(16.dp)
+                .padding(start = 16.dp, end = 16.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -102,7 +102,7 @@ fun AgregarProducto(navControlador: NavController, themeViewModel: ThemeViewMode
 
                 Text(
                     text = "Agregar producto nuevo",
-                    fontSize = 20.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -147,7 +147,7 @@ fun AgregarProducto(navControlador: NavController, themeViewModel: ThemeViewMode
 
                     Box(modifier = Modifier
                         .align(Alignment.CenterHorizontally)){
-                        SeccionImagen(imagen) { nuevaImagen -> imagen = nuevaImagen }
+                        SeccionImagen(imagen, rutaImagen) { nuevaImagen -> imagen = nuevaImagen }
                     }
 
 
@@ -228,15 +228,15 @@ fun CampoTexto(titulo: String, valor: String, placeholder: String, limite: Int, 
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = if (hayError) Color.Red else MaterialTheme.colorScheme.outline,
                 unfocusedIndicatorColor = if (hayError) Color.Red else MaterialTheme.colorScheme.outline,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
             )
         )
     }
 }
 
 @Composable
-fun SeccionImagen(imagen: Bitmap?, onImagenSeleccionada: (Bitmap) -> Unit) {
+fun SeccionImagen(imagen: Bitmap?, rutaImagen: String, onImagenSeleccionada: (Bitmap) -> Unit) {
     val context = LocalContext.current
     var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
 
@@ -264,10 +264,20 @@ fun SeccionImagen(imagen: Bitmap?, onImagenSeleccionada: (Bitmap) -> Unit) {
         Box(
             modifier = Modifier
                 .size(250.dp)
-                .background(Color(0xFFE0F7FA)),
+                .background(
+                    MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            imagen?.let { ImagenProducto(it) } ?: Text("No hay imagen seleccionada")
+            imagen?.let {
+                ImagenProducto(imagen)
+            } ?: run {
+                if (rutaImagen.isNotEmpty() && rutaImagen != "placeholder_base64") {
+                    // Si hay ruta pero no imagen cargada, mostrar un mensaje
+                    Text("Imagen guardada anteriormente")
+                } else {
+                    Text("No hay imagen seleccionada.")
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
