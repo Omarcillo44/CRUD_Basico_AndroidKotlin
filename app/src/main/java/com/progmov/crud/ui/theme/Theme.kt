@@ -16,7 +16,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-// Añade esto para manejar el estado del tema
+// Mantiene la estructura para el estado del tema
 data class ThemeState(
     val isDarkTheme: Boolean,
     val useDynamicColor: Boolean
@@ -26,30 +26,40 @@ val LocalThemeState = staticCompositionLocalOf<ThemeState> {
     error("No ThemeState provided")
 }
 
-// Archivo ui/theme/Theme.kt
+// Esquema de colores para tema claro
 private val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
     onPrimary = LightOnPrimary,
     secondary = LightSecondary,
     onSecondary = LightOnSecondary,
+    tertiary = LightTertiary,
+    onTertiary = LightOnTertiary,
     background = LightBackground,
     onBackground = LightOnBackground,
-    surface = LightBackground,
-    onSurface = LightOnBackground,
-    error = ErrorColor
+    surface = LightSurface,
+    onSurface = LightOnSurface,
+    error = ErrorColor,
+    errorContainer = Red100,
+    onError = Color.White
 )
 
+// Esquema de colores para tema oscuro
 private val DarkColorScheme = darkColorScheme(
     primary = DarkPrimary,
     onPrimary = DarkOnPrimary,
     secondary = DarkSecondary,
     onSecondary = DarkOnSecondary,
+    tertiary = DarkTertiary,
+    onTertiary = DarkOnTertiary,
     background = DarkBackground,
     onBackground = DarkOnBackground,
-    surface = DarkBackground,
-    onSurface = DarkOnBackground,
-    error = ErrorColor
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    error = ErrorColor,
+    errorContainer = Red200,
+    onError = Color.White
 )
+
 @Composable
 fun CRUDTheme(
     themeState: ThemeState,
@@ -64,14 +74,12 @@ fun CRUDTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
-}
-
-// Función para cambiar el tema
-fun updateTheme(darkTheme: Boolean, dynamicColor: Boolean = true) {
-    // Esta función está implementada en el ViewModel
+    // Proporcionar el estado del tema a través del CompositionLocal
+    CompositionLocalProvider(LocalThemeState provides themeState) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,6 +40,9 @@ import androidx.navigation.compose.composable
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.AlertDialog
@@ -224,19 +228,64 @@ fun DialogoAyuda(onClose: () -> Unit) {
     AlertDialog(
         onDismissRequest = onClose,
         title = {
-            Text("Centro de Ayuda", style = MaterialTheme.typography.headlineSmall)
+            Text("¿Otra vez tú?", style = MaterialTheme.typography.headlineSmall)
         },
         text = {
-            Text("¿Qué tipo de asistencia necesitas?", style = MaterialTheme.typography.bodyMedium)
+            Column(modifier = Modifier.padding(top = 8.dp)) {
+                Text(
+                    "Por si la lógica no fue suficiente, aquí te lo explico en caliente:",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Add, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Agrega un producto nuevo (sí, uno más).")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Edit, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Edita los datos del producto. Pero hazlo con cuidado, ¿sí?")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Delete, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Elimina el producto. Tranquilo, se pedirá confirmación. No eres un asesino... ¿verdad?")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Menu, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ese botón de las 3 barritas... abre esto mismo y cambia el tema. Increíble, ¿no?")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    "Y sí, puedes deslizar hacia arriba o abajo para ver el catálogo. No es magia, es scroll",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         },
         confirmButton = {
-            TextButton(onClick = onClose) { Text("Guía Rápida") }
-        },
-        dismissButton = {
-            TextButton(onClick = onClose) { Text("Contactar Soporte") }
+            TextButton(onClick = onClose) {
+                Text("Lo tengo")
+            }
         }
     )
 }
+
 
 @Composable
 fun DialogoTema(

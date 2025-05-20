@@ -23,16 +23,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -202,6 +209,71 @@ fun AgregarProducto(navControlador: NavController, themeViewModel: ThemeViewMode
         }
     }
 
+
+    @Override
+    @Composable
+    fun DialogoAyuda(onClose: () -> Unit) {
+        AlertDialog(
+            onDismissRequest = onClose,
+            title = {
+                Text("Agregar producto... ¿otra vez coleccionando cosas?", style = MaterialTheme.typography.headlineSmall)
+            },
+            text = {
+                Column(modifier = Modifier.padding(top = 8.dp)) {
+                    Text(
+                        "Aquí va la receta secreta para agregar tu maravilloso producto:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text("• Rellena los campos de nombre, precio y descripción. No inventes datos raros.")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("• Nada de campos vacíos. La validación está lista para castigarte.")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("• Usa el botón de galería para seleccionar la imagen del producto. Fácil, ¿no?")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("• ¿Te sientes creativo? Entonces toma la foto tú. Tu cel, tu riesgo.")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Presiona *Agregar producto* para que tu obra maestra cobre vida.")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("¿Cambio de opinión? El botón de volver siempre estará para ti.")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Y claro, las tres barritas mágicas también están aquí. Tema y ayuda en uno.")
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onClose) {
+                    Text("Todo claro, jefe")
+                }
+            }
+        )
+    }
+
+
     if (showHelpDialog) DialogoAyuda { showHelpDialog = false }
     if (showThemeDialog) DialogoTema(onClose = { showThemeDialog = false }, themeViewModel = themeViewModel)
 }
@@ -260,29 +332,36 @@ fun SeccionImagen(imagen: Bitmap?, rutaImagen: String, onImagenSeleccionada: (Bi
         bitmap?.let { onImagenSeleccionada(it) }
     }
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Box(
             modifier = Modifier
                 .size(250.dp)
-                .background(
-                    MaterialTheme.colorScheme.primaryContainer),
+                .size(80.dp)
+                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
+                    RoundedCornerShape(8.dp)
+                ),
             contentAlignment = Alignment.Center
         ) {
             imagen?.let {
                 ImagenProducto(imagen)
             } ?: run {
                 if (rutaImagen.isNotEmpty() && rutaImagen != "placeholder_base64") {
-                    // Si hay ruta pero no imagen cargada, mostrar un mensaje
-                    Text("Imagen guardada anteriormente")
+                    Text("Imagen guardada anteriormente", textAlign = TextAlign.Center)
                 } else {
-                    Text("No hay imagen seleccionada.")
+                    Text("No hay imagen seleccionada.", textAlign = TextAlign.Center)
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
             Button(onClick = {
                 val accion = { galeriaLauncher.launch("image/*") }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -295,6 +374,9 @@ fun SeccionImagen(imagen: Bitmap?, rutaImagen: String, onImagenSeleccionada: (Bi
             }) {
                 Text("Galería")
             }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
             Button(onClick = {
                 val accion = { camaraLauncher.launch() }
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) accion()
@@ -308,7 +390,6 @@ fun SeccionImagen(imagen: Bitmap?, rutaImagen: String, onImagenSeleccionada: (Bi
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

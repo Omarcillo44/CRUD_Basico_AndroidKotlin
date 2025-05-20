@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -201,6 +202,70 @@ fun EditarProducto(navControlador: NavController, productoId: Int, themeViewMode
                 onTemaClick = { showThemeDialog = true }
             )
         }
+    }
+
+
+    @Composable
+    @Override
+    fun DialogoAyuda(onClose: () -> Unit) {
+        AlertDialog(
+            onDismissRequest = onClose,
+            title = {
+                Text("Editar producto... otra vez", style = MaterialTheme.typography.headlineSmall)
+            },
+            text = {
+                Column(modifier = Modifier.padding(top = 8.dp)) {
+                    Text(
+                        "Prepárate para una experiencia inolvidable de edición:",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text("• Rellena los campos de nombre, precio y descripción. No pongas tonterías.")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("• ¿Vacíos? Vas a conocer la validación. No digas que no te advertí.")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("• Usa el botón de galería para elegir la imagen del producto. Clásico.")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("• ¿Te crees Peter Parker? Entonces toma la foto tú mismo. Tu responsabilidad.")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("No olvides presionar *Actualizar producto* o todo será en vano.")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("¿Te arrepentiste? El botón de volver te salvará (más o menos).")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Y sí... las tres barritas siguen aquí. No, no puedes escapar del tema.")
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onClose) {
+                    Text("Ya entendí, gracias")
+                }
+            }
+        )
     }
 
     if (showHelpDialog) DialogoAyuda { showHelpDialog = false }

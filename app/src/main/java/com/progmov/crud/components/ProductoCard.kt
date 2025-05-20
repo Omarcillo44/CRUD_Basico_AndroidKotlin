@@ -55,10 +55,8 @@ fun ProductoCard(
             Box(
                 modifier = Modifier
                     .size(80.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer,
-                        RoundedCornerShape(8.dp)
-                    ),
+                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f),
+                        RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 ImagenProducto(rutaImagen = producto.imagen)
